@@ -59,6 +59,8 @@ Menu.CreateSub = function (id,title,description,parent,cb)
     Menu.Set(id,'description',description)
     if not parent then error('parent not set') end 
     Menu.Set(id,'parent',parent)
+    Menu.Set(parent,'sub',id)
+
     local elements = {}
     elements.option = function (...) Menu.AddOption(id,...) end 
     elements.sub = function (...) local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) end 
@@ -82,7 +84,12 @@ Menu.Open = function (id,cb)
     end 
     print("Options:")
     for o,ov in pairs(options) do 
-        print(o,json.encode(ov))
+        for kk,kv in pairs(ov) do 
+            if type(kv) ~= 'function' then 
+                print('option:'..o , 'values('..kk..'):'..json.encode(kv))
+            end 
+        end 
+
     end 
     TriggerEvent('Menu:OnOpen',CurrentMenu)
     if cb then cb(CurrentMenu) end 

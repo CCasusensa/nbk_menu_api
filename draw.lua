@@ -17,12 +17,12 @@ CreateThread(function()
             end)
         end)
     end )
-    Menu.Open("menu3" ,function(data) 
+    Menu.Open("menu1" ,function(data) 
             local options = data.options 
             
     end )
     Wait(1000)
-    Menu.Close("menu3")
+    Menu.Close("menu1")
 end)
 
 
@@ -162,6 +162,10 @@ AddEventHandler('Menu:OnKeySelect', function(menu,cbidx)
     TriggerEvent('RequestScaleformCallbackInt','nbk_menu','GET_CURRENT_SELECTION',function(_idx)
         local idx = _idx + 1
         cbidx(idx)
+        print(menu.sub)
+        Menu.Open(menu.sub,function(smenu)
+            print(smenu.id)
+        end )
     end)
 end) 	
 
