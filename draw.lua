@@ -1,19 +1,19 @@
 CreateThread(function()
     Menu.Create("menu1","HELLO","WORLD",function(add)
-        add.option("MENU1 ITEM1",{1,2,3},"WTF1",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-        add.option("MENU1 ITEM2",{1,2,3},"WTF2",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-        add.option("MENU1 ITEM3",{1,2,3},"WTF3",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-        add.option("MENU1 ITEM4",{1,2,3},"WTF4",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
+        add.option("MENU1 ITEM1",{1,2,3},"WTF1",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+        add.option("MENU1 ITEM2",{1,2,3},"WTF2",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+        add.option("MENU1 ITEM3",{1,2,3},"WTF3",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+        add.option("MENU1 ITEM4",{1,2,3},"WTF4",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
         add.sub("menu2","HELLO2","WORLD2",function(add)
-            add.option("MENU2 ITEM1",{1,2,3},"WTF1",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-            add.option("MENU2 ITEM2",{1,2,3},"WTF2",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-            add.option("MENU2 ITEM3",{1,2,3},"WTF3",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-            add.option("MENU2 ITEM4",{1,2,3},"WTF4",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
+            add.option("MENU2 ITEM1",{1,2,3},"WTF1",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+            add.option("MENU2 ITEM2",{1,2,3},"WTF2",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+            add.option("MENU2 ITEM3",{1,2,3},"WTF3",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+            add.option("MENU2 ITEM4",{1,2,3},"WTF4",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
             add.sub("menu3","HELLO3","WORLD3",function(add)
-                add.option("MENU3 ITEM1",{1,2,3},"WTF1",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-                add.option("MENU3 ITEM2",{1,2,3},"WTF2",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-                add.option("MENU3 ITEM3",{1,2,3},"WTF3",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
-                add.option("MENU3 ITEM4",{1,2,3},"WTF4",function(idx) print('onChange idx :'..idx)  end ,function(idx) print('onSelect idx :'..idx) end )
+                add.option("MENU3 ITEM1",{1,2,3},"WTF1",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+                add.option("MENU3 ITEM2",{1,2,3},"WTF2",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+                add.option("MENU3 ITEM3",{1,2,3},"WTF3",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
+                add.option("MENU3 ITEM4",{1,2,3},"WTF4",{onChange = function(idx) print('onChange idx :'..idx)  end , onSelect = function(idx) print('onSelect idx :'..idx) end} )
             end)
         end)
     end )
@@ -76,12 +76,7 @@ Citizen.CreateThread(function()
             
 end)
 
-AddEventHandler('Menu:OnKeySelect', function(menu) 
-    TriggerEvent('RequestScaleformCallbackInt','nbk_menu','GET_CURRENT_SELECTION',function(_idx)
-        local idx = _idx + 1
-        Menu.Current().options[idx].onSelect(idx)
-    end)
-end) 	
+
 
 function SetDataSlot(index,item,price)
 	local _index = index - 1
@@ -163,8 +158,14 @@ function FadeShow()
 
 end 
 	
+AddEventHandler('Menu:OnKeySelect', function(menu,cbidx) 
+    TriggerEvent('RequestScaleformCallbackInt','nbk_menu','GET_CURRENT_SELECTION',function(_idx)
+        local idx = _idx + 1
+        cbidx(idx)
+    end)
+end) 	
 
-AddEventHandler('Menu:OnKeyDown', function(menu) 
+AddEventHandler('Menu:OnKeyDown', function(menu,cbidx) 
     
     TriggerEvent('CallScaleformMovie',"nbk_menu",function(run,send,stop,handle)
         run("SET_INPUT_EVENT")
@@ -173,13 +174,13 @@ AddEventHandler('Menu:OnKeyDown', function(menu)
         PlaySoundFrontend(-1, "NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET", true)
         TriggerEvent('RequestScaleformCallbackInt','nbk_menu','GET_CURRENT_SELECTION',function(_idx)
             local idx = _idx + 1
-            Menu.Current().options[idx].onChange(idx)
+            cbidx(idx)
         end)
     end)
 
 end) 
 
-AddEventHandler('Menu:OnKeyUp', function(menu) 
+AddEventHandler('Menu:OnKeyUp', function(menu,cbidx) 
 
 	TriggerEvent('CallScaleformMovie',"nbk_menu",function(run,send,stop,handle)
         run("SET_INPUT_EVENT")
@@ -188,13 +189,13 @@ AddEventHandler('Menu:OnKeyUp', function(menu)
         PlaySoundFrontend(-1, "NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET", true)
         TriggerEvent('RequestScaleformCallbackInt','nbk_menu','GET_CURRENT_SELECTION',function(_idx)
             local idx = _idx + 1
-            Menu.Current().options[idx].onChange(idx)
+            cbidx(idx)
         end)
     end)
 end) 
 
 AddEventHandler('Menu:OnKeyBack', function(menu) 
-	print('back?')
+	print('back? or close?')
 end) 
 
 

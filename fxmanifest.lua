@@ -8,4 +8,5 @@ client_scripts {
 
 dependencies {
 	'threads',
+    'scaleforms'
 }
