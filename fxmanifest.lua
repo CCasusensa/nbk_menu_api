@@ -2,7 +2,7 @@ fx_version 'adamant'
 games {'gta5'}
 client_scripts {
 '@threads/threads.lua',
-'main.lua'
+'nbk_menu_api.lua'
 }
 
 dependencies {
