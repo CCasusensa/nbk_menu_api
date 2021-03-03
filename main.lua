@@ -33,7 +33,7 @@ Menu.Current = function()
 end 
 
 Menu.Parent = function(id)
-    
+    if not Menu[id] then return end 
     return Menu[Menu[id].parent]
 end 
 
@@ -68,7 +68,7 @@ Menu.CreateSub = function (id,title,description,parent,cb)
 end 
 
 Menu.Open = function (id,cb)
-    print(id)
+    if CurrentMenu and not Menu[id] then return end 
     if not CurrentMenu then 
         CurrentMenu = Menu[id]
     elseif CurrentMenu ~= Menu[id] then 
@@ -98,8 +98,16 @@ end
 
 Menu.Close = function (id,cb)
     TriggerEvent('Menu:OnClose',CurrentMenu)
+    Menu.Release(id)
+    
+end 
+
+Menu.Back = function (id,cb)
+    TriggerEvent('Menu:OnBack',CurrentMenu)
     if Menu.Parent(id) then 
         Menu.Open(Menu.Parent(id).id,cb)
+    else 
+        Menu.Close(id,cb)
     end 
 end 
 
@@ -117,50 +125,53 @@ end
 
 Menu.Release = function(id)
     Datas[id] = nil 
+    CurrentMenu = nil 
     collectgarbage()
 end 
 Menu.Delete = Menu.Release
 
 local keys = { down = 187, up = 188, left = 189, right = 190, select = 191, back = 194 }
 Threads.CreateLoopOnce(function()
-    if IsControlJustReleased(0, keys.down) then
-        TriggerEvent('Menu:OnKeyDown',CurrentMenu,function(cbidx)
-            if cbidx > 0 then 
-            CurrentMenu.options[cbidx].onChange(cbidx)
-            else error("menu options idx = 0 not for lua table")
-            end 
-        end)
-	elseif IsControlJustReleased(0, keys.up) then
-        TriggerEvent('Menu:OnKeyUp',CurrentMenu,function(cbidx)
-            if cbidx > 0 then 
-            CurrentMenu.options[cbidx].onChange(cbidx)
-            else error("menu options idx = 0 not for lua table")
-            end 
-        end)
-	elseif IsControlJustReleased(0, keys.left) then
-        TriggerEvent('Menu:OnKeyLeft',CurrentMenu,function(cbidx)
-            if cbidx > 0 then 
-            CurrentMenu.options[cbidx].onSlide(cbidx)
-            else error("menu options idx = 0 not for lua table")
-            end 
-        end)
-	elseif IsControlJustReleased(0, keys.right) then
-		TriggerEvent('Menu:OnKeyRight',CurrentMenu,function(cbidx)
-            if cbidx > 0 then 
-            CurrentMenu.options[cbidx].onSlide(cbidx)
-            else error("menu options idx = 0 not for lua table")
-            end 
-        end)
-	elseif IsControlJustReleased(0, keys.select) then
-        TriggerEvent('Menu:OnKeySelect',CurrentMenu,function(cbidx)
-            if cbidx > 0 then 
-            CurrentMenu.options[cbidx].onSelect(cbidx)
-            else error("menu options idx = 0 not for lua table")
-            end 
-        end)
-	elseif IsControlJustReleased(0, keys.back) then
-		TriggerEvent('Menu:OnKeyBack',CurrentMenu)
-	end
+    if CurrentMenu then 
+        if IsControlJustReleased(0, keys.down) then
+            TriggerEvent('Menu:OnKeyDown',CurrentMenu,function(cbidx)
+                if cbidx > 0 then 
+                CurrentMenu.options[cbidx].onChange(cbidx)
+                else error("menu options idx = 0 not for lua table")
+                end 
+            end)
+        elseif IsControlJustReleased(0, keys.up) then
+            TriggerEvent('Menu:OnKeyUp',CurrentMenu,function(cbidx)
+                if cbidx > 0 then 
+                CurrentMenu.options[cbidx].onChange(cbidx)
+                else error("menu options idx = 0 not for lua table")
+                end 
+            end)
+        elseif IsControlJustReleased(0, keys.left) then
+            TriggerEvent('Menu:OnKeyLeft',CurrentMenu,function(cbidx)
+                if cbidx > 0 then 
+                CurrentMenu.options[cbidx].onSlide(cbidx)
+                else error("menu options idx = 0 not for lua table")
+                end 
+            end)
+        elseif IsControlJustReleased(0, keys.right) then
+            TriggerEvent('Menu:OnKeyRight',CurrentMenu,function(cbidx)
+                if cbidx > 0 then 
+                CurrentMenu.options[cbidx].onSlide(cbidx)
+                else error("menu options idx = 0 not for lua table")
+                end 
+            end)
+        elseif IsControlJustReleased(0, keys.select) then
+            TriggerEvent('Menu:OnKeySelect',CurrentMenu,function(cbidx)
+                if cbidx > 0 then 
+                CurrentMenu.options[cbidx].onSelect(cbidx)
+                else error("menu options idx = 0 not for lua table")
+                end 
+            end)
+        elseif IsControlJustReleased(0, keys.back) then
+            TriggerEvent('Menu:OnKeyBack',CurrentMenu)
+        end
+    end 
 end)
 
 
