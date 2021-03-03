@@ -43,20 +43,20 @@ Menu.Set = function(id,property,value)
     Datas[id][property] = value
 end 
 
-Menu.Create = function (id,title,description,cb)
+Menu.Create = function (id,title,header,cb)
     Menu.Set(id,'id',id)
     Menu.Set(id,'title',title)
-    Menu.Set(id,'description',description)
+    Menu.Set(id,'header',header)
     local elements = {}
     elements.option = function (...) Menu.AddOption(id,...) end 
     elements.sub = function (...) local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) end 
     cb(elements)
 end 
 
-Menu.CreateSub = function (id,title,description,parent,cb)
+Menu.CreateSub = function (id,title,header,parent,cb)
     Menu.Set(id,'id',id)
     Menu.Set(id,'title',title)
-    Menu.Set(id,'description',description)
+    Menu.Set(id,'header',header)
     if not parent then error('parent not set') end 
     Menu.Set(id,'parent',parent)
     Menu.Set(parent,'sub',id)
@@ -111,16 +111,19 @@ Menu.Back = function (id,cb)
     end 
 end 
 
-Menu.AddOption = function(id, text, data, desc, onDatas )
-    if not text then 
-        text = ""
+Menu.AddOption = function(id, textL, textR,  desc, data, onDatas )
+    if not textL then 
+        textL = ""
+    end 
+    if not textR then 
+        textR = ""
     end 
     if not data then 
         data = {}
     end 
     if Datas[id] == nil then  Datas[id] = {} end
     if Datas[id]['options'] == nil then Datas[id]['options'] = {} end 
-    table.insert(Datas[id]['options'],{text = text,data = data ,desc = desc, onSelect = onDatas.onSelect, onChange = onDatas.onChange, onSlider = onDatas.onSlider})
+    table.insert(Datas[id]['options'],{textL = textL,data = data ,textR = textR, desc = desc, onSelect = onDatas.onSelect, onChange = onDatas.onChange, onSlider = onDatas.onSlider})
 end
 
 Menu.Release = function(id)
@@ -136,35 +139,36 @@ Threads.CreateLoopOnce(function()
         if IsControlJustReleased(0, keys.down) then
             TriggerEvent('Menu:OnKeyDown',CurrentMenu,function(cbidx)
                 if cbidx > 0 then 
-                CurrentMenu.options[cbidx].onChange(cbidx)
+                CurrentMenu.options[cbidx].onChange(CurrentMenu,cbidx)
+                
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
         elseif IsControlJustReleased(0, keys.up) then
             TriggerEvent('Menu:OnKeyUp',CurrentMenu,function(cbidx)
                 if cbidx > 0 then 
-                CurrentMenu.options[cbidx].onChange(cbidx)
+                CurrentMenu.options[cbidx].onChange(CurrentMenu,cbidx)
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
         elseif IsControlJustReleased(0, keys.left) then
             TriggerEvent('Menu:OnKeyLeft',CurrentMenu,function(cbidx)
                 if cbidx > 0 then 
-                CurrentMenu.options[cbidx].onSlide(cbidx)
+                CurrentMenu.options[cbidx].onSlide(CurrentMenu,cbidx)
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
         elseif IsControlJustReleased(0, keys.right) then
             TriggerEvent('Menu:OnKeyRight',CurrentMenu,function(cbidx)
                 if cbidx > 0 then 
-                CurrentMenu.options[cbidx].onSlide(cbidx)
+                CurrentMenu.options[cbidx].onSlide(CurrentMenu,cbidx)
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
         elseif IsControlJustReleased(0, keys.select) then
             TriggerEvent('Menu:OnKeySelect',CurrentMenu,function(cbidx)
                 if cbidx > 0 then 
-                CurrentMenu.options[cbidx].onSelect(cbidx)
+                CurrentMenu.options[cbidx].onSelect(CurrentMenu,cbidx)
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
