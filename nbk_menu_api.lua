@@ -42,7 +42,10 @@ Menu.Create = function (id,title,header,cb)
     Menu.Set(id,'header',header)
     local elements = {}
     elements.option = function (...) Menu.AddOption(id,...) end 
-    elements.sub = function (...) local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) end 
+    elements.sub = function (...) 
+        local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) 
+        Menu.AddOption(id,tbl[2],"<img height='18' width = '20'  src='img://commonmenu/arrowright'>","Open Sub Menu:"..tbl[1],{},tbl[1])
+    end 
     cb(elements)
 end 
 Menu.CreateSub = function (id,title,header,parent,cb)
@@ -54,10 +57,17 @@ Menu.CreateSub = function (id,title,header,parent,cb)
     Menu.Set(parent,'sub',id)
     local elements = {}
     elements.option = function (...) Menu.AddOption(id,...) end 
-    elements.sub = function (...) local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) end 
+    elements.sub = function (...) 
+        local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) 
+        Menu.AddOption(id,tbl[2],"<img height='18' width = '20'  src='img://commonmenu/arrowright'>","Open Sub Menu:"..tbl[1],{},tbl[1])
+    end 
     cb(elements)
 end 
 Menu.Open = function (id,cb)
+    RequestStreamedTextureDict( "commonmenu" )
+    while not HasStreamedTextureDictLoaded("commonmenu") do 
+        Wait(0)
+    end 
     if CurrentMenu and not Menu[id] then return end 
     if not CurrentMenu then 
         CurrentMenu = Menu[id]
@@ -95,20 +105,21 @@ Menu.Back = function (id,cb)
         Menu.Close(id,cb)
     end 
 end 
-Menu.AddOption = function(id, textL, textR,  desc, data )
+Menu.AddOption = function(id, textL, textR, desc, data , targetMenuID)
     if not textL then 
         textL = ""
     end 
     if not data then 
         data = {}
     end 
+    
     if Datas[id] == nil then  Datas[id] = {} end
     if type(textR) == 'string' then 
-    if Datas[id]['options'] == nil then Datas[id]['options'] = {} end 
-    table.insert(Datas[id]['options'],{textL = textL,data = data ,textR = textR, desc = desc,isSlider = false})
+        if Datas[id]['options'] == nil then Datas[id]['options'] = {} end 
+        table.insert(Datas[id]['options'],{textL = textL,data = data ,textR = textR, desc = desc,targetMenuID = targetMenuID,style = "normal"})
     elseif type(textR) == 'table' then  
-    if Datas[id]['options'] == nil then Datas[id]['options'] = {} end 
-    table.insert(Datas[id]['options'],{textL = textL,data = data ,textR = textR, desc = desc,isSlider = true,SliderCurrentIdx = 1})
+        if Datas[id]['options'] == nil then Datas[id]['options'] = {} end 
+        table.insert(Datas[id]['options'],{textL = textL,data = data ,textR = textR, desc = desc,targetMenuID = targetMenuID,style = "slide",nowsidx = 1,maxsidx = #textR})
     end 
 end
 Menu.Release = function(id)
@@ -141,27 +152,35 @@ Threads.CreateLoopOnce(function()
             end
         elseif IsControlJustReleased(0, keys.left) then
             if Menu.OnKey then
-            Menu.OnKey("LEFT",CurrentMenu,function(cbidx)
+            Menu.OnKey("LEFT",CurrentMenu,function(cbidx,cbsidx)
                 if cbidx > 0 then 
-                if Menu.OnAction then Menu.OnAction('SLIDE',CurrentMenu,cbidx) end 
+                    if CurrentMenu.options[cbidx].style == "slide" then 
+                        if cbsidx and cbsidx > 0 then 
+                            if Menu.OnAction then Menu.OnAction('SLIDE',CurrentMenu,cbidx,cbsidx) end 
+                        end 
+                    end
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
             end 
         elseif IsControlJustReleased(0, keys.right) then
             if Menu.OnKey then
-            Menu.OnKey("RIGHT",CurrentMenu,function(cbidx)
+            Menu.OnKey("RIGHT",CurrentMenu,function(cbidx,cbsidx)
                 if cbidx > 0 then 
-                 if Menu.OnAction then Menu.OnAction('SLIDE',CurrentMenu,cbidx) end 
+                    if CurrentMenu.options[cbidx].style == "slide" then 
+                        if cbsidx and cbsidx > 0 then 
+                        if Menu.OnAction then Menu.OnAction('SLIDE',CurrentMenu,cbidx,cbsidx) end 
+                        end 
+                    end
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
             end 
         elseif IsControlJustReleased(0, keys.select) then
             if Menu.OnKey then
-            Menu.OnKey("SELECT",CurrentMenu,function(cbidx)
+            Menu.OnKey("SELECT",CurrentMenu,function(cbidx,cbsidx)
                 if cbidx > 0 then 
-                 if Menu.OnAction then Menu.OnAction('SELECT',CurrentMenu,cbidx) end 
+                 if Menu.OnAction then Menu.OnAction('SELECT',CurrentMenu,cbidx,cbsidx) end 
                 else error("menu options idx = 0 not for lua table")
                 end 
             end)
