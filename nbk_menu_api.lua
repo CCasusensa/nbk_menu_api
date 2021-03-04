@@ -42,11 +42,12 @@ Menu.Create = function (id,title,header,cb)
     Menu.Set(id,'header',header)
     local elements = {}
     elements.option = function (...) Menu.AddOption(id,...) end 
-    elements.sub = function (...) 
+    elements.submenu = function (...) 
         local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) 
         Menu.AddOption(id,tbl[2],"<img height='18' width = '20'  src='img://commonmenu/arrowright'>","Open Sub Menu:"..tbl[1],{},tbl[1])
     end 
     cb(elements)
+    Menu.Set(id,'loaded',true)
 end 
 Menu.CreateSub = function (id,title,header,parent,cb)
     Menu.Set(id,'id',id)
@@ -57,17 +58,30 @@ Menu.CreateSub = function (id,title,header,parent,cb)
     Menu.Set(parent,'sub',id)
     local elements = {}
     elements.option = function (...) Menu.AddOption(id,...) end 
-    elements.sub = function (...) 
+    elements.submenu = function (...) 
         local tbl = {...} Menu.CreateSub(tbl[1],tbl[2],tbl[3],id,tbl[4]) 
         Menu.AddOption(id,tbl[2],"<img height='18' width = '20'  src='img://commonmenu/arrowright'>","Open Sub Menu:"..tbl[1],{},tbl[1])
     end 
     cb(elements)
+    Menu.Set(id,'loaded',true)
+end 
+Menu.IsLoaded = function(id)
+    if Menu[id] and Menu[id].loaded then 
+        return true 
+    else 
+        return false 
+    end 
 end 
 Menu.Open = function (id,cb)
+    CreateThread(function() 
     RequestStreamedTextureDict( "commonmenu" )
-    while not HasStreamedTextureDictLoaded("commonmenu") do 
+    while not HasStreamedTextureDictLoaded("commonmenu")  do 
         Wait(0)
     end 
+    while not Menu.IsLoaded(id) do 
+        Wait(0)
+    end 
+    if not Menu or not Menu[id] then  error("Menu:".. id .." not created"); end 
     if CurrentMenu and not Menu[id] then return end 
     if not CurrentMenu then 
         CurrentMenu = Menu[id]
@@ -92,7 +106,8 @@ Menu.Open = function (id,cb)
     end 
     if Menu.OnAction then Menu.OnAction("OPEN",CurrentMenu) end 
     if cb then cb(CurrentMenu) end 
-    return CurrentMenu
+
+    end)
 end 
 Menu.Close = function (id,cb)
     if Menu.OnAction then Menu.OnAction("CLOSE",CurrentMenu) end 
@@ -132,7 +147,8 @@ local keys = { down = 187, up = 188, left = 189, right = 190, select = 191, back
 CreateThread(function()
 Threads.CreateLoopOnce(function()
     if CurrentMenu then 
-        if IsControlJustReleased(0, keys.down) then
+        if IsControlPressed(0, keys.down) then
+        
             if Menu.OnKey then 
             Menu.OnKey("DOWN",CurrentMenu,function(cbidx)
                 if cbidx > 0 then 
@@ -141,7 +157,8 @@ Threads.CreateLoopOnce(function()
                 end 
             end)
             end
-        elseif IsControlJustReleased(0, keys.up) then
+            Citizen.Wait(175)
+        elseif IsControlPressed(0, keys.up) then
             if Menu.OnKey then 
             Menu.OnKey("UP",CurrentMenu,function(cbidx)
                 if cbidx > 0 then 
@@ -150,7 +167,8 @@ Threads.CreateLoopOnce(function()
                 end 
             end)
             end
-        elseif IsControlJustReleased(0, keys.left) then
+            Citizen.Wait(175)
+        elseif IsControlPressed(0, keys.left) then
             if Menu.OnKey then
             Menu.OnKey("LEFT",CurrentMenu,function(cbidx,cbsidx)
                 if cbidx > 0 then 
@@ -163,7 +181,8 @@ Threads.CreateLoopOnce(function()
                 end 
             end)
             end 
-        elseif IsControlJustReleased(0, keys.right) then
+            Citizen.Wait(175)
+        elseif IsControlPressed(0, keys.right) then
             if Menu.OnKey then
             Menu.OnKey("RIGHT",CurrentMenu,function(cbidx,cbsidx)
                 if cbidx > 0 then 
@@ -176,7 +195,8 @@ Threads.CreateLoopOnce(function()
                 end 
             end)
             end 
-        elseif IsControlJustReleased(0, keys.select) then
+            Citizen.Wait(175)
+        elseif IsControlPressed(0, keys.select) then
             if Menu.OnKey then
             Menu.OnKey("SELECT",CurrentMenu,function(cbidx,cbsidx)
                 if cbidx > 0 then 
@@ -185,10 +205,12 @@ Threads.CreateLoopOnce(function()
                 end 
             end)
             end 
-        elseif IsControlJustReleased(0, keys.back) then
+            Citizen.Wait(175)
+        elseif IsControlPressed(0, keys.back) then
             if Menu.OnAction then
             Menu.OnAction("BACK",CurrentMenu)
             end 
+            Citizen.Wait(175)
         end
     end 
 end)
